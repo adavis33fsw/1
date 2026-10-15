@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>Field Lab: Venture Expedition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efe3c8; --paper-2:#e4d4ab; --paper-3:#f7eed8;
+    --ink:#2d2a22; --ink-soft:#54503f;
+    --forest:#2f4a3c; --forest-dark:#1f332a;
+    --rust:#b5451b; --rust-dark:#8c3514; --mustard:#d9a441; --line:#c9b588;
+    --note-yellow:#f6e58d; --note-pink:#f4b8c6; --note-blue:#a9d6e5; --note-green:#b7e4c7;
+    --shadow: 0 6px 18px rgba(45,42,34,.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif; color:var(--ink);
+    background:radial-gradient(circle at 10% 20%, rgba(0,0,0,0.03) 0, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(0,0,0,0.03) 0, transparent 40%), var(--paper);
+    min-height:100vh; line-height:1.5; touch-action:manipulation;
+  }
+  button{font-family:inherit; touch-action:manipulation;}
+  input,textarea,select{font-family:inherit;}
+
+  .masthead{background:var(--forest); color:var(--paper-3); padding:22px 20px 26px; position:relative; border-bottom:6px solid var(--rust);}
+  .masthead::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;
+    background-image:repeating-linear-gradient(90deg, var(--mustard) 0 14px, var(--rust) 14px 28px); opacity:.9;}
+  .masthead-inner{max-width:1100px;margin:0 auto;}
+  .masthead h1{font-family:'Special Elite','Courier New',monospace; font-size:clamp(26px,4vw,42px); margin:0 0 4px; letter-spacing:1px;}
+  .masthead p.sub{margin:0;color:var(--mustard);font-weight:600;letter-spacing:.5px;font-size:14px;}
+  .masthead-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-top:16px;}
+  .team-box label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mustard);margin-bottom:4px;}
+  .team-box input{background:var(--paper-3);border:2px solid var(--forest-dark);border-radius:4px;padding:10px;font-size:16px;font-weight:600;color:var(--ink);width:220px;}
+  .timer-box{background:rgba(0,0,0,.2);border:2px dashed var(--mustard);border-radius:8px;padding:10px 16px;text-align:center;}
+  .timer-box .time{font-family:'Special Elite',monospace;font-size:28px;color:var(--paper-3);letter-spacing:2px;}
+  .timer-box .phase-hint{font-size:11px;color:var(--mustard);margin-top:2px;min-height:14px;max-width:220px;}
+  .timer-controls{display:flex;gap:6px;justify-content:center;margin-top:6px;}
+  .timer-controls button{font-size:12px;padding:6px 10px;border-radius:4px;border:1px solid var(--mustard);background:transparent;color:var(--mustard);cursor:pointer;font-weight:600;min-height:32px;}
+  .timer-controls button:active{background:var(--mustard);color:var(--forest-dark);}
+
+  details.instructor{max-width:1100px;margin:14px auto 0;background:rgba(0,0,0,.18);border:1px solid rgba(217,164,65,.5);border-radius:8px;padding:10px 16px;color:var(--paper-3);}
+  details.instructor summary{cursor:pointer;font-weight:700;color:var(--mustard);padding:4px 0;}
+  details.instructor .inst-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px;font-size:13.5px;}
+  details.instructor table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  details.instructor td,details.instructor th{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left;}
+  @media(max-width:700px){details.instructor .inst-grid{grid-template-columns:1fr;}}
+
+  .trail{max-width:1100px;margin:22px auto 0;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:4px;}
+  .stop{flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;padding-top:6px;background:none;border:none;min-height:44px;}
+  .stop::before{content:"";position:absolute;top:28px;left:-50%;width:100%;height:3px;
+    background:repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px); z-index:0;}
+  .stop:first-child::before{display:none;}
+  .badge{width:50px;height:50px;border-radius:50%;background:var(--paper-3);border:3px solid var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;z-index:1;
+    transition:transform .2s, box-shadow .2s, border-color .2s, background .2s; box-shadow:var(--shadow);}
+  .stop.active .badge{border-color:var(--rust);transform:scale(1.08);box-shadow:0 0 0 4px rgba(181,69,27,.15);}
+  .stop.done .badge{background:var(--forest);border-color:var(--forest-dark);color:#fff;}
+  .stop.done .badge::after{content:"✓";position:absolute;bottom:-6px;right:-4px;background:var(--rust);color:#fff;
+    width:19px;height:19px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid var(--paper-3);}
+  .stop .label{margin-top:7px;font-family:'Special Elite',monospace;font-size:10.5px;text-align:center;letter-spacing:.3px;color:var(--ink-soft);max-width:78px;}
+  .stop.active .label{color:var(--rust);font-weight:bold;}
+
+  main{max-width:1100px;margin:28px auto 70px;padding:0 20px;}
+  .stage{display:none;animation:fadeIn .35s ease;}
+  .stage.visible{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .stage-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
+  .stage-head h2{font-family:'Special Elite',monospace;font-size:clamp(21px,3vw,28px);margin:0;color:var(--forest-dark);}
+  .stage-tag{background:var(--rust);color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:999px;text-transform:uppercase;}
+  .stage-intro{color:var(--ink-soft);max-width:760px;margin-bottom:20px;font-size:15px;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:24px;}
+  .flip-card{perspective:1200px;height:250px;cursor:pointer;background:none;border:none;padding:0;text-align:left;width:100%;}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d;}
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+  .flip-front{background:var(--paper-3);border:2px solid var(--forest);}
+  .flip-front .icon{font-size:26px;}
+  .flip-front h3{font-size:15.5px;margin:8px 0 6px;color:var(--forest-dark);}
+  .flip-front p{font-size:12.5px;color:var(--ink-soft);margin:0;}
+  .flip-front .tap-hint{margin-top:auto;font-size:11px;color:var(--rust);font-weight:700;}
+  .flip-back{background:var(--forest);color:var(--paper-3);transform:rotateY(180deg);overflow-y:auto;}
+  .flip-back h4{margin:0 0 6px;font-size:12.5px;color:var(--mustard);text-transform:uppercase;letter-spacing:.5px;}
+  .flip-back p{font-size:12.5px;margin:0;}
+  .lab-progress{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+  .lab-progress b{color:var(--forest-dark);}
+
+  .panel{background:var(--paper-3);border:1px solid var(--line);border-radius:10px;padding:18px;box-shadow:var(--shadow);margin-bottom:20px;}
+  .panel h3{margin-top:0;color:var(--forest-dark);font-size:16.5px;}
+  .panel .example{font-size:12.5px;background:rgba(47,74,60,.07);border-left:3px solid var(--forest);padding:8px 10px;border-radius:4px;margin:8px 0 4px;color:var(--ink-soft);}
+  textarea, input[type=text]{width:100%;font-family:inherit;font-size:16px;padding:10px;border:1.5px solid var(--line);border-radius:6px;background:#fffdf7;color:var(--ink);resize:vertical;}
+  textarea:focus, input:focus{outline:2px solid var(--rust);outline-offset:1px;}
+  label.field-label{display:block;font-size:12.5px;font-weight:700;color:var(--forest-dark);margin:10px 0 4px;}
+  .hint{font-size:12px;color:var(--ink-soft);font-style:italic;margin:2px 0 6px;}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px;}
+  .chip{background:var(--paper-2);border:1.5px dashed var(--forest);border-radius:999px;padding:9px 14px;font-size:13px;cursor:pointer;color:var(--forest-dark);font-weight:600;min-height:40px;}
+  .chip:active{background:var(--forest);color:#fff;}
+
+  button.primary{background:var(--rust);color:#fff;border:none;padding:13px 22px;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer;letter-spacing:.3px;box-shadow:var(--shadow);min-height:46px;}
+  button.primary:active{background:var(--rust-dark);}
+  button.primary:disabled{opacity:.6;cursor:wait;}
+  button.secondary{background:transparent;color:var(--forest-dark);border:2px solid var(--forest-dark);padding:11px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13.5px;min-height:44px;}
+  button.secondary:active{background:var(--forest-dark);color:#fff;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center;}
+
+  .bmc-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto auto;gap:8px;margin-bottom:10px;
+    grid-template-areas:"partners activities value relationships segments" "partners resources value channels segments" "cost cost cost revenue revenue";}
+  .bmc-box{background:#fffdf7;border:1.5px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;}
+  .bmc-box h4{margin:0 0 3px;font-size:12px;color:var(--forest-dark);text-transform:uppercase;letter-spacing:.4px;}
+  .bmc-box .hint{font-size:10.5px;margin:0 0 5px;}
+  .bmc-box textarea{flex:1;min-height:70px;font-size:13px;}
+  .bmc-partners{grid-area:partners;} .bmc-activities{grid-area:activities;} .bmc-resources{grid-area:resources;}
+  .bmc-value{grid-area:value;background:#fff6e1;border-color:var(--mustard);} .bmc-relationships{grid-area:relationships;}
+  .bmc-channels{grid-area:channels;} .bmc-segments{grid-area:segments;} .bmc-cost{grid-area:cost;} .bmc-revenue{grid-area:revenue;}
+  @media(max-width:900px){.bmc-grid{grid-template-columns:repeat(2,1fr);grid-template-areas:"partners activities" "partners resources" "value value" "relationships channels" "segments segments" "cost revenue";}}
+
+  .hunt-card{border-left:6px solid var(--rust);}
+  .hunt-card.ux-card{border-left-color:var(--forest);}
+  .hunt-card h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .hunt-card .tag{font-size:11px;background:var(--mustard);color:var(--forest-dark);padding:2px 9px;border-radius:999px;font-weight:700;}
+  .log-list{list-style:none;margin:10px 0 0;padding:0;}
+  .log-list li{background:var(--paper-2);border:1px dashed var(--forest);border-radius:6px;padding:8px 10px;margin-bottom:8px;font-size:13px;position:relative;display:flex;gap:10px;align-items:flex-start;}
+  .log-list li .thumb{width:64px;height:64px;object-fit:cover;border-radius:6px;border:2px solid var(--forest);flex-shrink:0;background:#fff;}
+  .log-list li .no-thumb{width:64px;height:64px;border-radius:6px;border:2px dashed var(--ink-soft);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-soft);text-align:center;padding:4px;}
+  .log-list li .entry-text{flex:1;padding-right:24px;}
+  .log-list li b{color:var(--forest-dark);}
+  .log-list .del{position:absolute;top:6px;right:8px;color:var(--rust);cursor:pointer;font-weight:700;background:none;border:none;font-size:16px;min-width:30px;min-height:30px;}
+  .inline-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .inline-form textarea, .inline-form .photo-buttons{grid-column:1/-1;}
+  @media(max-width:600px){.inline-form{grid-template-columns:1fr;}}
+
+  .hidden-file-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  .photo-buttons{display:flex;gap:8px;flex-wrap:wrap;}
+  .photo-btn{flex:1;min-width:140px;text-align:center;background:#fffdf7;border:1.5px dashed var(--forest);border-radius:6px;padding:11px 12px;font-size:13px;font-weight:700;color:var(--forest-dark);cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .photo-btn:active{background:var(--forest);color:#fff;}
+
+  .preview-img{max-width:160px;max-height:140px;border-radius:6px;margin-top:6px;display:none;border:2px solid var(--forest);}
+  .photo-hint{font-size:12px;color:var(--forest-dark);font-weight:600;margin-top:2px;min-height:16px;}
+
+  .reaction-grid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .reaction{border:2px solid var(--forest);border-radius:8px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;background:#fffdf7;color:var(--forest-dark);min-height:40px;}
+  .reaction.on{background:var(--forest);color:#fff;}
+  .reaction.neg{border-color:var(--rust);}
+  .reaction.neg.on{background:var(--rust);border-color:var(--rust-dark);}
+
+  .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:10px;}
+  .board-col{background:rgba(0,0,0,.03);border:2px dashed var(--line);border-radius:10px;padding:10px;min-height:150px;}
+  .board-col h4{margin:0 0 8px;font-size:13px;color:var(--forest-dark);text-align:center;}
+  .sticky{font-family:'Caveat',cursive;font-size:18px;line-height:1.2;padding:10px 34px 22px 12px;border-radius:4px;margin-bottom:8px;box-shadow:2px 3px 6px rgba(0,0,0,.18);position:relative;transform:rotate(var(--r,-1deg));}
+  .sticky select{font-family:'Inter',sans-serif;font-size:11px;position:absolute;bottom:4px;right:4px;border:none;background:transparent;}
+  .sticky .del{position:absolute;top:2px;right:6px;cursor:pointer;font-family:Inter,sans-serif;font-size:14px;color:#555;background:none;border:none;min-width:26px;min-height:26px;}
+  .note-yellow{background:var(--note-yellow);} .note-pink{background:var(--note-pink);} .note-blue{background:var(--note-blue);} .note-green{background:var(--note-green);}
+
+  .continue-row{margin-top:26px;padding-top:16px;border-top:2px dashed var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  .save-ping{font-size:12px;color:var(--forest);opacity:0;transition:opacity .3s;}
+  .save-ping.show{opacity:1;}
+  .storage-warning{background:#fdecea;border:1.5px solid var(--rust);color:var(--rust-dark);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;}
+  .storage-warning.show{display:block;}
+  .ios-note{background:#eef5f0;border:1.5px solid var(--forest);color:var(--forest-dark);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none;}
+  .ios-note.show{display:block;}
+  footer{text-align:center;padding:20px;color:var(--ink-soft);font-size:12px;}
+  ::selection{background:var(--mustard);}
+  @media (max-width:480px){.badge{width:42px;height:42px;font-size:17px;} .stop .label{font-size:9px;max-width:62px;}}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1>🧭 Field Lab: Venture Expedition</h1>
+    <p class="sub">A Desirability, Prototyping, Alpha-Testing & Customer Feedback Simulation</p>
+
+    <details class="instructor">
+      <summary>📋 Instructor Quick-Start (expand now, collapse before class)</summary>
+      <div class="inst-grid">
+        <div>
+          <p><b>Objective:</b> Students apply UX desirability concepts (prototyping, product reaction cards), alpha-testing scenario design, and customer-feedback analysis (affinity diagramming, A/B testing, Build-Measure-Learn) by inventing a campus micro-venture, mapping it on a Business Model Canvas, hunting for real-world concept artifacts on campus, and desirability-testing their idea on real people.</p>
+          <p><b>Group size:</b> 3-5 students. Each student works individually on the Field and Interview logs even though they share one idea and canvas.</p>
+          <p><b>Device compatibility:</b> Works on iPhone/Safari, iPad/Safari, Android phones/Chrome, Android tablets, Mac, and Windows. Photos auto-compress on-device. Every photo field offers both "Take Photo" and "Choose Existing" options. On iOS, the PDF report opens in a new tab — students tap the Share icon and choose "Save to Files."</p>
+          <p><b>Data note:</b> Autosaves to this browser's local storage only. Each student should download their Mission Report PDF before closing the tab.</p>
+        </div>
+        <div>
+          <table>
+            <tr><th>Time</th><th>Phase</th><th>What happens</th></tr>
+            <tr><td>0-10</td><td>Lab</td><td>Flip concept cards; quick whole-class check on 1-2</td></tr>
+            <tr><td>10-18</td><td>Pitch</td><td>Groups pick/invent a campus micro-venture</td></tr>
+            <tr><td>18-33</td><td>Canvas</td><td>Fill Business Model Canvas together</td></tr>
+            <tr><td>33-50</td><td>Field + Interview</td><td>Outside: 6 artifact hunts + 2-3 interviews, individually</td></tr>
+            <tr><td>50-60</td><td>Debrief</td><td>Affinity-diagram findings, write Alpha Test Report synthesis, download PDF</td></tr>
+          </table>
+          <p style="margin-top:8px;"><b>Debrief prompts:</b> Which artifact best captured desirability vs. mere usability? What feedback theme surprised you (like Dropbox's file-sharing insight)? What's one Build-Measure-Learn change you'd make to your canvas?</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="masthead-row">
+      <div class="team-box"><label for="teamName">Team Name</label><input type="text" id="teamName" placeholder="e.g. The Lab Rats"></div>
+      <div class="timer-box">
+        <div class="time" id="timerDisplay">60:00</div>
+        <div class="phase-hint" id="phaseHint">Press start when class begins</div>
+        <div class="timer-controls">
+          <button type="button" id="btnStart">Start</button>
+          <button type="button" id="btnPause">Pause</button>
+          <button type="button" id="btnReset">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="trail" id="trail">
+  <button type="button" class="stop active" data-stage="lab"><span class="badge">🔬</span><span class="label">THE LAB</span></button>
+  <button type="button" class="stop" data-stage="pitch"><span class="badge">💡</span><span class="label">THE PITCH</span></button>
+  <button type="button" class="stop" data-stage="canvas"><span class="badge">🗺️</span><span class="label">THE CANVAS</span></button>
+  <button type="button" class="stop" data-stage="field"><span class="badge">📸</span><span class="label">THE FIELD</span></button>
+  <button type="button" class="stop" data-stage="interview"><span class="badge">🎙️</span><span class="label">INTERVIEWS</span></button>
+  <button type="button" class="stop" data-stage="debrief"><span class="badge">🧩</span><span class="label">DEBRIEF</span></button>
+</nav>
+
+<main>
+
+  <section class="stage visible" id="stage-lab">
+    <div class="stage-head"><h2>🔬 The Lab</h2><span class="stage-tag">Briefing</span></div>
+    <p class="stage-intro">Before heading into the field, your team needs its gear. Tap each card to flip it and read the field connection — these are the exact concepts from class you'll be hunting for on campus and testing on real people.</p>
+    <p class="lab-progress">Cards flipped: <b id="labCount">0</b> / <span id="labTotal">8</span></p>
+    <div class="card-grid" id="labCards"></div>
+    <div class="continue-row">
+      <span class="save-ping" id="pingLab">Saved</span>
+      <button type="button" class="primary" id="btnLabContinue">Gear up: Head to the Pitch</button>
+    </div>
+  </section>
+
+  <section class="stage" id="stage-pitch">
+    <div class="stage-head"><h2>💡 The Pitch</h2><span class="stage-tag">Choose Your Venture</span></div>
+    <p class="stage-intro">Decide on one campus-focused business idea your whole team will build and test today. Keep it small and specific — like the real alpha-testing examples from class.</p>
+    <div class="panel">
+      <h3>Need inspiration? Tap a seed idea</h3>
+      <div class="chip-row" id="chipRow">
+        <button type="button" class="chip" data-name="FinPay" data-problem="A bill-splitting app for young professionals and students: group dinner splits, roommate rent/utilities, and one-to-one 'payback a friend' payments.">FinPay (bill-splitting)</button>
+        <button type="button" class="chip" data-name="QuickQuad" data-problem="A campus navigation app: find the quickest route from the dorm to the library, search for the nearest parking lot to a building, and check/navigate to an available academic advisor.">QuickQuad (campus nav)</button>
+        <button type="button" class="chip" data-name="GrubRun" data-problem="A food delivery service connecting dining hall or local restaurant orders to dorms.">GrubRun (food delivery)</button>
+      </div>
+      <p class="example"><b>From class:</b> alpha scenarios for FinPay covered a "group dinner" use case, a "roommate expenses" use case, and a "payback a friend" use case — each testing a different feature. QuickQuad's scenarios covered pathfinding, search, and information lookup. Your pitch should be specific enough to write scenarios like these.</p>
+      <label class="field-label" for="ventureName">Venture Name</label>
+      <input type="text" id="ventureName" placeholder="e.g. QuadQuick">
+      <label class="field-label" for="ventureOneLiner">One-liner (the pitch in a single sentence)</label>
+      <input type="text" id="ventureOneLiner" placeholder="e.g. The fastest way to split a bill with your roommates.">
+      <label class="field-label" for="ventureProblem">What problem are we solving? Who is it for?</label>
+      <div class="hint">Alpha testing starts here: are you solving the right problem for a real target user?</div>
+      <textarea id="ventureProblem" rows="3" placeholder="Describe the problem and your target campus customer..."></textarea>
+      <label class="field-label" for="ventureDesire">What is one thing that will make this DESIRABLE, not just usable?</label>
+      <div class="hint">Headspace uses calming colors, friendly illustrations, and smooth microinteractions to make meditation feel accessible, not intimidating. What's your venture's equivalent visual/emotional hook?</div>
+      <textarea id="ventureDesire" rows="2" placeholder="e.g. A playful confirmation animation when a bill is settled..."></textarea>
+    </div>
+    <div class="continue-row">
+      <span class="save-ping" id="pingPitch">Saved</span>
+      <button type="button" class="primary" id="btnPitchContinue">Lock in the idea: Build the Canvas</button>
+    </div>
+  </section>
+
+  <section class="stage" id="stage-canvas">
+    <div class="stage-head"><h2>🗺️ The Canvas</h2><span class="stage-tag">Business Model Canvas</span></div>
+    <p class="stage-intro">Map your venture as a team. The Value Proposition box (center) is the heart of desirability — spend extra time there.</p>
+    <div class="bmc-grid">
+      <div class="bmc-box bmc-partners"><h4>Key Partners</h4><p class="hint">Who helps you run this?</p><textarea data-bmc="partners"></textarea></div>
+      <div class="bmc-box bmc-activities"><h4>Key Activities</h4><p class="hint">What must you DO?</p><textarea data-bmc="activities"></textarea></div>
+      <div class="bmc-box bmc-resources"><h4>Key Resources</h4><p class="hint">What do you NEED?</p><textarea data-bmc="resources"></textarea></div>
+      <div class="bmc-box bmc-value"><h4>Value Proposition</h4><p class="hint">What makes it desirable & useful?</p><textarea data-bmc="value"></textarea></div>
+      <div class="bmc-box bmc-relationships"><h4>Customer Relationships</h4><p class="hint">How do you engage them?</p><textarea data-bmc="relationships"></textarea></div>
+      <div class="bmc-box bmc-channels"><h4>Channels</h4><p class="hint">How do you reach them?</p><textarea data-bmc="channels"></textarea></div>
+      <div class="bmc-box bmc-segments"><h4>Customer Segments</h4><p class="hint">Who exactly is this for?</p><textarea data-bmc="segments"></textarea></div>
+      <div class="bmc-box bmc-cost"><h4>Cost Structure</h4><p class="hint">Biggest costs?</p><textarea data-bmc="cost"></textarea></div>
+      <div class="bmc-box bmc-revenue"><h4>Revenue Streams</h4><p class="hint">How do you make money?</p><textarea data-bmc="revenue"></textarea></div>
+    </div>
+    <div class="continue-row">
+      <span class="save-ping" id="pingCanvas">Saved</span>
+      <button type="button" class="primary" id="btnCanvasContinue">Canvas done: Deploy to the Field</button>
+    </div>
+  </section>
+
+  <section class="stage" id="stage-field">
+    <div class="stage-head"><h2>📸 The Field</h2><span class="stage-tag">Artifact Hunt: Individual</span></div>
+    <p class="stage-intro"><b>Head outside, solo or spread out.</b> Each team member finds, photographs, and explains their own artifacts. For every photo field, you can snap a new picture OR choose one already on your phone/computer — photos are compressed automatically so this works smoothly on any device.</p>
+    <div class="storage-warning" id="storageWarning">⚠️ Your device's storage is nearly full. Please download your Mission Report PDF now to avoid losing data.</div>
+
+    <div class="panel hunt-card ux-card">
+      <h3>🖥️ Hunt 1 <span class="tag">UX in the Wild</span></h3>
+      <p>Find a real interface or system on campus people interact with: a vending machine, parking kiosk, elevator panel, door, wayfinding sign, campus app screen, or self-checkout. Evaluate it like a UX designer.</p>
+      <div class="inline-form">
+        <input type="text" placeholder="Your name" id="h1-name">
+        <input type="text" placeholder="Location on campus" id="h1-loc">
+        <div class="photo-buttons">
+          <input type="file" accept="image/*" capture="environment" id="h1-file-camera" class="hidden-file-input">
+          <label for="h1-file-camera" class="photo-btn">📷 Take Photo</label>
+          <input type="file" accept="image/*" id="h1-file-gallery" class="hidden-file-input">
+          <label for="h1-file-gallery" class="photo-btn">🖼️ Choose Existing</label>
+        </div>
+        <textarea placeholder="Good or bad UX? What's the friction point or moment of delight? What product-reaction-card word describes it?" id="h1-exp"></textarea>
+      </div>
+      <img class="preview-img" id="h1-preview" alt="Artifact preview">
+      <div class="btn-row"><button type="button" class="secondary add-hunt-btn" data-hunt-key="h1">Add to Group Log</button><span class="photo-hint" id="h1-photoHint"></span></div>
+      <ul class="log-list" id="h1-log"></ul>
+    </div>
+
+    <div class="panel hunt-card">
+      <h3>🧪 Hunt 2 <span class="tag">Prototype in the Wild</span></h3>
+      <p>Find something clearly rough, early, or unfinished: a taped-up flyer draft, a chalk sketch, a beta sign, a mock-up on a bulletin board — low-fidelity, just like a paper prototype.</p>
+      <div class="inline-form">
+        <input type="text" placeholder="Your name" id="h2-name">
+        <input type="text" placeholder="Location on campus" id="h2-loc">
+        <div class="photo-buttons">
+          <input type="file" accept="image/*" capture="environment" id="h2-file-camera" class="hidden-file-input">
+          <label for="h2-file-camera" class="photo-btn">📷 Take Photo</label>
+          <input type="file" accept="image/*" id="h2-file-gallery" class="hidden-file-input">
+          <label for="h2-file-gallery" class="photo-btn">🖼️ Choose Existing</label>
+        </div>
+        <textarea placeholder="Why does this count as a prototype? Low-fidelity or high-fidelity?" id="h2-exp"></textarea>
+      </div>
+      <img class="preview-img" id="h2-preview" alt="Artifact preview">
+      <div class="btn-row"><button type="button" class="secondary add-hunt-btn" data-hunt-key="h2">Add to Group Log</button><span class="photo-hint" id="h2-photoHint"></span></div>
+      <ul class="log-list" id="h2-log"></ul>
+    </div>
+
+    <div class="panel hunt-card">
+      <h3>❤️ Hunt 3 <span class="tag">Desirability in Action</span></h3>
+      <p>Find a spot, object, or sign people clearly enjoy using, not just tolerate. What makes it emotionally appealing — the kind of visual design and microinteraction that makes something desirable, not just functional?</p>
+      <div class="inline-form">
+        <input type="text" placeholder="Your name" id="h3-name">
+        <input type="text" placeholder="Location on campus" id="h3-loc">
+        <div class="photo-buttons">
+          <input type="file" accept="image/*" capture="environment" id="h3-file-camera" class="hidden-file-input">
+          <label for="h3-file-camera" class="photo-btn">📷 Take Photo</label>
+          <input type="file" accept="image/*" id="h3-file-gallery" class="hidden-file-input">
+          <label for="h3-file-gallery" class="photo-btn">🖼️ Choose Existing</label>
+        </div>
+        <textarea placeholder="What emotional reaction does this create, and why?" id="h3-exp"></textarea>
+      </div>
+      <img class="preview-img" id="h3-preview" alt="Artifact preview">
+      <div class="btn-row"><button type="button" class="secondary add-hunt-btn" data-hunt-key="h3">Add to Group Log</button><span class="photo-hint" id="h3-photoHint"></span></div>
+      <ul class="log-list" id="h3-log"></ul>
+    </div>
+
+    <div class="panel hunt-card">
+      <h3>📬 Hunt 4 <span class="tag">Feedback Mechanism</span></h3>
+      <p>Find a way campus already collects feedback: a suggestion box, QR code survey, comment board, review sign, rating station — like a focus group prompt or a bug-report form.</p>
+      <div class="inline-form">
+        <input type="text" placeholder="Your name" id="h4-name">
+        <input type="text" placeholder="Location on campus" id="h4-loc">
+        <div class="photo-buttons">
+          <input type="file" accept="image/*" capture="environment" id="h4-file-camera" class="hidden-file-input">
+          <label for="h4-file-camera" class="photo-btn">📷 Take Photo</label>
+          <input type="file" accept="image/*" id="h4-file-gallery" class="hidden-file-input">
+          <label for="h4-file-gallery" class="photo-btn">🖼️ Choose Existing</label>
+        </div>
+        <textarea placeholder="What kind of feedback does it collect? How could your venture use something similar?" id="h4-exp"></textarea>
+      </div>
+      <img class="preview-img" id="h4-preview" alt="Artifact preview">
+      <div class="btn-row"><button type="button" class="secondary add-hunt-btn" data-hunt-key="h4">Add to Group Log</button><span class="photo-hint" id="h4-photoHint"></span></div>
+      <ul class="log-list" id="h4-log"></ul>
+    </div>
+
+    <div class="panel hunt-card">
+      <h3>🔁 Hunt 5 <span class="tag">Iteration Evidence</span></h3>
+      <p>Find proof something on campus was revised over time: a patched sign, updated directory, renovated space, a "version 2" of anything — a physical Build-Measure-Learn loop.</p>
+      <div class="inline-form">
+        <input type="text" placeholder="Your name" id="h5-name">
+        <input type="text" placeholder="Location on campus" id="h5-loc">
+        <div class="photo-buttons">
+          <input type="file" accept="image/*" capture="environment" id="h5-file-camera" class="hidden-file-input">
+          <label for="h5-file-camera" class="photo-btn">📷 Take Photo</label>
+          <input type="file" accept="image/*" id="h5-file-gallery" class="hidden-file-input">
+          <label for="h5-file-gallery" class="photo-btn">🖼️ Choose Existing</label>
+        </div>
+        <textarea placeholder="What changed, and what feedback probably caused it?" id="h5-exp"></textarea>
+      </div>
+      <img class="preview-img" id="h5-preview" alt="Artifact preview">
+      <div class="btn-row"><button type="button" class="secondary add-hunt-btn" data-hunt-key="h5">Add to Group Log</button><span class="photo-hint" id="h5-photoHint"></span></div>
+      <ul class="log-list" id="h5-log"></ul>
+    </div>
+
+    <div class="panel hunt-card">
+      <h3>🎯 Hunt 6 <span class="tag">Connects to OUR Venture</span></h3>
+      <p>Find an artifact that's a real touchpoint for your specific idea: a competitor, a potential customer environment, or a spot your venture would actually operate in.</p>
+      <div class="inline-form">
+        <input type="text" placeholder="Your name" id="h6-name">
+        <input type="text" placeholder="Location on campus" id="h6-loc">
+        <div class="photo-buttons">
+          <input type="file" accept="image/*" capture="environment" id="h6-file-camera" class="hidden-file-input">
+          <label for="h6-file-camera" class="photo-btn">📷 Take Photo</label>
+          <input type="file" accept="image/*" id="h6-file-gallery" class="hidden-file-input">
+          <label for="h6-file-gallery" class="photo-btn">🖼️ Choose Existing</label>
+        </div>
+        <textarea placeholder="How does this connect directly to your venture idea?" id="h6-exp"></textarea>
+      </div>
+      <img class="preview-img" id="h6-preview" alt="Artifact preview">
+      <div class="btn-row"><button type="button" class="secondary add-hunt-btn" data-hunt-key="h6">Add to Group Log</button><span class="photo-hint" id="h6-photoHint"></span></div>
+      <ul class="log-list" id="h6-log"></ul>
+    </div>
+
+    <div class="continue-row">
+      <span class="save-ping" id="pingField">Saved</span>
+      <button type="button" class="primary" id="btnFieldContinue">Artifacts collected: Go Interview</button>
+    </div>
+  </section>
+
+  <section class="stage" id="stage-interview">
+    <div class="stage-head"><h2>🎙️ Interviews</h2><span class="stage-tag">Desirability Testing: Individual</span></div>
+    <p class="stage-intro">Find 2-3 real people on campus (not your group). Pitch your one-liner in under 30 seconds, then run this mini Product Reaction Card test — the same technique used in usability sessions.</p>
+    <div class="panel">
+      <label class="field-label" for="iv-interviewer">Your name (interviewer)</label>
+      <input type="text" id="iv-interviewer" placeholder="Your name">
+      <label class="field-label" for="iv-subject">Who did you talk to?</label>
+      <input type="text" id="iv-subject" placeholder="e.g. student in the library, staff at the cafe...">
+      <label class="field-label">Reaction Cards: tap the words that match their gut reaction</label>
+      <div class="reaction-grid" id="reactionGrid"></div>
+      <label class="field-label" for="iv-notes">Their quotes / notes</label>
+      <textarea id="iv-notes" rows="3" placeholder="e.g. I like it but I'd never pay a subscription for this..."></textarea>
+      <label class="field-label" for="iv-wouldUse">Would they use it? Why or why not?</label>
+      <textarea id="iv-wouldUse" rows="2"></textarea>
+      <div class="btn-row"><button type="button" class="secondary" id="btnAddInterview">Add Interview to Group Log</button></div>
+    </div>
+    <ul class="log-list" id="iv-log"></ul>
+    <div class="continue-row">
+      <span class="save-ping" id="pingInterview">Saved</span>
+      <button type="button" class="primary" id="btnInterviewContinue">Interviews done: Return to Debrief</button>
+    </div>
+  </section>
+
+  <section class="stage" id="stage-debrief">
+    <div class="stage-head"><h2>🧩 Debrief</h2><span class="stage-tag">Affinity Diagramming & Report</span></div>
+    <p class="stage-intro">Regroup as a team. Turn raw field notes into sticky notes and sort them into themes — exactly how Dropbox's product team clustered user-test feedback and discovered file organization and sharing were major pain points, which drove a real redesign.</p>
+    <div class="panel">
+      <label class="field-label" for="stickyText">Add a sticky note</label>
+      <div class="inline-form">
+        <input type="text" id="stickyText" placeholder="Type a finding, quote, or observation...">
+        <select id="stickyColor">
+          <option value="note-yellow">Yellow</option><option value="note-pink">Pink</option>
+          <option value="note-blue">Blue</option><option value="note-green">Green</option>
+        </select>
+      </div>
+      <div class="btn-row"><button type="button" class="secondary" id="btnAddSticky">Add Note</button></div>
+    </div>
+    <div class="board">
+      <div class="board-col" data-col="Desirability Signals"><h4>❤️ Desirability Signals</h4><div class="col-notes"></div></div>
+      <div class="board-col" data-col="Feedback Themes"><h4>📬 Feedback Themes</h4><div class="col-notes"></div></div>
+      <div class="board-col" data-col="Iteration Ideas"><h4>🔁 Iteration Ideas</h4><div class="col-notes"></div></div>
+      <div class="board-col" data-col="Unsorted"><h4>🗂️ Unsorted</h4><div class="col-notes"></div></div>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <h3>Mini Alpha Test Report</h3>
+      <p class="hint">Real teams close out testing with a formal report: key findings, decisions, and roadmap changes. Fill this in as a team before downloading.</p>
+      <label class="field-label" for="keyFindings">Key Findings (most critical insights from your artifacts & interviews)</label>
+      <textarea id="keyFindings" rows="3"></textarea>
+      <label class="field-label" for="decisions">Decisions (what will you fix now vs. postpone to a later version?)</label>
+      <textarea id="decisions" rows="3"></textarea>
+      <label class="field-label" for="roadmapChanges">Roadmap Changes (what would you build/measure/learn next, based on today?)</label>
+      <textarea id="roadmapChanges" rows="3"></textarea>
+    </div>
+
+    <div class="panel">
+      <h3>📦 Mission Report</h3>
+      <p>Compiles your venture idea, Business Model Canvas, artifact log (with photos), interview log, sticky-note synthesis, and Mini Alpha Test Report into one downloadable PDF.</p>
+      <button type="button" class="primary" id="btnGenerateReport">⬇ Download Mission Report (PDF)</button>
+      <div class="ios-note" id="iosPermanentNote">📱 iPhone/iPad detected: your report will open in a new tab instead of downloading directly. Tap the Share icon in Safari, then choose "Save to Files" to save your PDF.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Field Lab: Venture Expedition — built around UX/Desirability Design, Alpha Testing, and Customer Feedback Analysis course content. Data is stored locally in this browser only.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(function(){
+"use strict";
+
+var STORAGE_KEY = 'ventureExpeditionState_v4';
+var state = {
+  team:'', idea:{name:'',oneLiner:'',problem:'',desire:''},
+  bmc:{partners:'',activities:'',resources:'',value:'',relationships:'',channels:'',segments:'',cost:'',revenue:''},
+  labFlipped:{}, completed:{lab:false,pitch:false,canvas:false,field:false,interview:false,debrief:false},
+  hunts:{h1:[],h2:[],h3:[],h4:[],h5:[],h6:[]},
+  interviews:[], stickies:[],
+  reportExtra:{keyFindings:'',decisions:'',roadmapChanges:''}
+};
+
+/* pending (not-yet-logged) photos per hunt, chosen via either camera or gallery input */
+var pendingPhotos = {h1:null,h2:null,h3:null,h4:null,h5:null,h6:null};
+
+function save(pingId){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    hideStorageWarning();
+  }catch(e){
+    showStorageWarning();
+  }
+  if(pingId){
+    var el = document.getElementById(pingId);
+    if(el){ el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); }, 1200); }
+  }
+}
+function showStorageWarning(){ var w=document.getElementById('storageWarning'); if(w) w.classList.add('show'); }
+function hideStorageWarning(){ var w=document.getElementById('storageWarning'); if(w) w.classList.remove('show'); }
+
+function load(){
+  var raw = null;
+  try{ raw = localStorage.getItem(STORAGE_KEY); }catch(e){ raw = null; }
+  if(raw){
+    try{
+      var parsed = JSON.parse(raw);
+      for(var k in parsed){ state[k] = parsed[k]; }
+      if(!state.reportExtra) state.reportExtra = {keyFindings:'',decisions:'',roadmapChanges:''};
+    }catch(e){ /* ignore corrupt data */ }
+  }
+}
+
+/* ===== DEVICE DETECTION ===== */
+function isIOSDevice(){
+  var ua = navigator.userAgent || navigator.vendor || window.opera || '';
+  var iOSUA = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  var iPadOS13Up = navigator.platform === 'MacIntel' && !!navigator.maxTouchPoints && navigator.maxTouchPoints > 1;
+  return iOSUA || iPadOS13Up;
+}
+
+/* ===== NAV ===== */
+var stages = ['lab','pitch','canvas','field','interview','debrief'];
+function goTo(stage, markPrevComplete){
+  if(markPrevComplete){
+    var idx = stages.indexOf(stage);
+    var prev = stages[idx-1];
+    if(prev) state.completed[prev] = true;
+    save();
+  }
+  stages.forEach(function(s){
+    var el = document.getElementById('stage-' + s);
+    if(el) el.classList.toggle('visible', s === stage);
+  });
+  document.querySelectorAll('.stop').forEach(function(el){
+    el.classList.toggle('active', el.getAttribute('data-stage') === stage);
+    el.classList.toggle('done', !!state.completed[el.getAttribute('data-stage')]);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ===== TIMER ===== */
+var totalSeconds = 60*60, timerInterval = null;
+var phaseMap = [
+  {max:600,label:'Suggested: Lab briefing'},
+  {max:1080,label:'Suggested: Pitch your venture'},
+  {max:1980,label:'Suggested: Build the Canvas'},
+  {max:3000,label:'Suggested: Field + Interviews — go outside!'},
+  {max:3600,label:'Suggested: Debrief and synthesis'}
+];
+function renderTimer(){
+  var elapsed = 3600 - totalSeconds;
+  var m = Math.floor(totalSeconds/60), s = totalSeconds % 60;
+  var disp = document.getElementById('timerDisplay');
+  if(disp) disp.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  var phase = null;
+  for(var i=0;i<phaseMap.length;i++){ if(elapsed < phaseMap[i].max){ phase = phaseMap[i]; break; } }
+  var hint = document.getElementById('phaseHint');
+  if(hint) hint.textContent = phase ? phase.label : 'Time! Wrap up and share out.';
+}
+function startTimer(){
+  if(timerInterval) return;
+  timerInterval = setInterval(function(){
+    if(totalSeconds > 0){ totalSeconds--; renderTimer(); }
+    else{ clearInterval(timerInterval); timerInterval = null; }
+  }, 1000);
+}
+function pauseTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
+function resetTimer(){ pauseTimer(); totalSeconds = 3600; renderTimer(); }
+
+/* ===== LAB CARDS ===== */
+var labConcepts = [
+  {icon:'🖥️', title:'UX Design & Desirability', front:'UX design shapes how desirable a product feels, not just whether it works.',
+   back:'Field connection: Hunt 1, "UX in the Wild," asks you to find and evaluate a real campus interface — a kiosk, door, sign, or app — like a UX designer would.'},
+  {icon:'🎨', title:'Visual Design & Brand Experience', front:'Visual hierarchy, color psychology, consistency, and microinteractions shape emotional connection. Headspace uses calming colors and friendly illustrations to make meditation feel accessible.',
+   back:'Field connection: Hunt 3, "Desirability in Action," asks you to find something on campus whose visual design makes it genuinely appealing, not just functional.'},
+  {icon:'🧪', title:'Low vs. High-Fidelity Prototypes', front:'Low-fidelity: sketches, paper prototypes. High-fidelity: interactive digital mockups. Cheap and quick so ideas can pivot before real investment.',
+   back:'Field connection: Hunt 2, "Prototype in the Wild," asks you to find a rough, unfinished campus artifact and identify its fidelity level.'},
+  {icon:'🎬', title:'Alpha Testing Scenarios', front:'FinPay\u2019s alpha testers ran scenarios like "group dinner," "roommate expenses," and "payback a friend." QuickQuad tested pathfinding, search, and lookup.',
+   back:'Field connection: Your venture Pitch should be specific enough to write scenarios just like these, which you\u2019ll use when you interview real people.'},
+  {icon:'❤️', title:'Product Reaction Cards', front:'A desirability-testing method: testers pick words (Confusing, Delightful, Trustworthy...) to describe their gut reaction to a product.',
+   back:'Field connection: Your Interview stage uses this exact technique — tap reaction-card words based on what real people say about your pitch.'},
+  {icon:'🗂️', title:'Affinity Diagramming', front:'Dropbox\u2019s product team clustered user-test feedback into themes. One cluster revealed file organization and sharing were major pain points — that insight drove a real redesign.',
+   back:'Field connection: This is your Debrief stage. Sort your artifacts and interview notes into sticky-note theme columns the same way.'},
+  {icon:'🐛', title:'Categorizing Feedback', front:'Feedback sorts into buckets: Functional Bugs, Usability/UX Problems, Performance Issues, and Suggestions/Enhancements — not every comment is the same kind of issue.',
+   back:'Field connection: As you debrief, sort your interview notes using these same categories before turning them into sticky notes.'},
+  {icon:'⚖️', title:'Pivot, Persevere, or Say No', front:'Instagram\u2019s team stripped away everything except photo sharing after feedback revealed that was the beloved feature — a pivot guided by real behavior. Teams must also guard against "feature creep" by weighing requests against their product vision.',
+   back:'Field connection: In your Mini Alpha Test Report, decide what feedback you\u2019d act on now, postpone, or decline to protect your venture\u2019s focus.'}
+];
+
+function renderLabCards(){
+  var grid = document.getElementById('labCards');
+  if(!grid) return;
+  grid.innerHTML = '';
+  var totalEl = document.getElementById('labTotal');
+  if(totalEl) totalEl.textContent = labConcepts.length;
+  labConcepts.forEach(function(c, i){
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'flip-card' + (state.labFlipped[i] ? ' flipped' : '');
+    var inner = document.createElement('div'); inner.className = 'flip-inner';
+    var front = document.createElement('div'); front.className = 'flip-front';
+    var iconEl = document.createElement('div'); iconEl.className='icon'; iconEl.textContent = c.icon;
+    var titleEl = document.createElement('h3'); titleEl.textContent = c.title;
+    var frontP = document.createElement('p'); frontP.textContent = c.front;
+    var tapHint = document.createElement('div'); tapHint.className='tap-hint'; tapHint.textContent = 'TAP TO REVEAL';
+    front.appendChild(iconEl); front.appendChild(titleEl); front.appendChild(frontP); front.appendChild(tapHint);
+    var back = document.createElement('div'); back.className = 'flip-back';
+    var backH = document.createElement('h4'); backH.textContent = 'Field Connection';
+    var backP = document.createElement('p'); backP.textContent = c.back;
+    back.appendChild(backH); back.appendChild(backP);
+    inner.appendChild(front); inner.appendChild(back);
+    card.appendChild(inner);
+    card.addEventListener('click', function(){
+      card.classList.toggle('flipped');
+      state.labFlipped[i] = card.classList.contains('flipped');
+      updateLabCount();
+      save('pingLab');
+    });
+    grid.appendChild(card);
+  });
+  updateLabCount();
+}
+function updateLabCount(){
+  var count = 0;
+  for(var k in state.labFlipped){ if(state.labFlipped[k]) count++; }
+  var el = document.getElementById('labCount');
+  if(el) el.textContent = count;
+}
+
+/* ===== PITCH ===== */
+function fillIdea(name, problem){
+  document.getElementById('ventureName').value = name;
+  document.getElementById('ventureProblem').value = problem;
+  syncPitch();
+}
+function syncPitch(){
+  state.idea.name = document.getElementById('ventureName').value;
+  state.idea.oneLiner = document.getElementById('ventureOneLiner').value;
+  state.idea.problem = document.getElementById('ventureProblem').value;
+  state.idea.desire = document.getElementById('ventureDesire').value;
+  save('pingPitch');
+}
+
+/* ===== IMAGE COMPRESSION (critical for cross-device storage) ===== */
+function compressImageFile(file, callback){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var maxDim = 900;
+      var w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = Math.round(h * (maxDim / w)); w = maxDim; }
+      else if(h > maxDim){ w = Math.round(w * (maxDim / h)); h = maxDim; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var dataUrl;
+      try{ dataUrl = canvas.toDataURL('image/jpeg', 0.72); }
+      catch(err){ dataUrl = e.target.result; }
+      callback(dataUrl);
+    };
+    img.onerror = function(){ callback(e.target.result); };
+    img.src = e.target.result;
+  };
+  reader.onerror = function(){ callback(null); };
+  reader.readAsDataURL(file);
+}
+
+/* ===== FIELD HUNTS ===== */
+var huntMeta = {
+  h1:'UX in the Wild', h2:'Prototype in the Wild', h3:'Desirability in Action',
+  h4:'Feedback Mechanism', h5:'Iteration Evidence', h6:'Connects to Our Venture'
+};
+
+/* Called whenever EITHER the camera input OR the gallery input changes for a given hunt key */
+function handlePhotoSelect(key, inputEl){
+  var previewEl = document.getElementById(key+'-preview');
+  var hintEl = document.getElementById(key+'-photoHint');
+  if(inputEl.files && inputEl.files[0]){
+    if(hintEl) hintEl.textContent = 'Processing photo...';
+    compressImageFile(inputEl.files[0], function(dataUrl){
+      pendingPhotos[key] = dataUrl;
+      if(dataUrl && previewEl){ previewEl.src = dataUrl; previewEl.style.display = 'block'; }
+      if(hintEl) hintEl.textContent = dataUrl ? 'Photo ready ✓' : 'Could not process that photo — try another.';
+    });
+  }
+}
+
+function addHunt(key){
+  var nameEl = document.getElementById(key+'-name');
+  var locEl = document.getElementById(key+'-loc');
+  var expEl = document.getElementById(key+'-exp');
+  var previewEl = document.getElementById(key+'-preview');
+  var hintEl = document.getElementById(key+'-photoHint');
+  var cameraEl = document.getElementById(key+'-file-camera');
+  var galleryEl = document.getElementById(key+'-file-gallery');
+
+  var name = nameEl.value.trim();
+  var loc = locEl.value.trim();
+  var exp = expEl.value.trim();
+  if(!name || !exp){ alert('Please add your name and an explanation before logging.'); return; }
+
+  var photoData = pendingPhotos[key] || null;
+  state.hunts[key].push({name:name, loc:loc, exp:exp, photo:photoData, time:new Date().toLocaleTimeString()});
+  save('pingField');
+  renderHuntLog(key);
+
+  expEl.value = ''; locEl.value = '';
+  if(cameraEl) cameraEl.value = '';
+  if(galleryEl) galleryEl.value = '';
+  pendingPhotos[key] = null;
+  if(previewEl){ previewEl.style.display = 'none'; previewEl.src = ''; }
+  if(hintEl){
+    hintEl.textContent = photoData ? 'Added with photo ✓' : 'Logged without a photo';
+    setTimeout(function(){ hintEl.textContent = ''; }, 2000);
+  }
+}
+
+function renderHuntLog(key){
+  var ul = document.getElementById(key+'-log');
+  if(!ul) return;
+  ul.innerHTML = '';
+  state.hunts[key].forEach(function(entry, idx){
+    var li = document.createElement('li');
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'del'; del.textContent = '✕';
+    del.setAttribute('aria-label','Delete entry');
+    del.addEventListener('click', function(){
+      state.hunts[key].splice(idx,1); save('pingField'); renderHuntLog(key);
+    });
+    var thumb;
+    if(entry.photo){
+      thumb = document.createElement('img'); thumb.className = 'thumb'; thumb.src = entry.photo;
+      thumb.alt = 'Artifact photo from ' + entry.name;
+    } else {
+      thumb = document.createElement('div'); thumb.className = 'no-thumb'; thumb.textContent = 'No photo';
+    }
+    var textWrap = document.createElement('div'); textWrap.className = 'entry-text';
+    var b = document.createElement('b'); b.textContent = entry.name;
+    var locText = document.createTextNode(' @ ' + (entry.loc || '—'));
+    var br = document.createElement('br');
+    var expText = document.createTextNode(entry.exp);
+    textWrap.appendChild(b); textWrap.appendChild(locText); textWrap.appendChild(br); textWrap.appendChild(expText);
+    li.appendChild(del); li.appendChild(thumb); li.appendChild(textWrap);
+    ul.appendChild(li);
+  });
+}
+
+/* ===== INTERVIEWS ===== */
+var reactionWords = ['Innovative','Confusing','Fun','Overwhelming','Useful','Trustworthy','Boring','Delightful','Clunky','Exciting','Essential','Unnecessary','Simple','Overdesigned','Motivating'];
+var negWords = ['Confusing','Overwhelming','Boring','Clunky','Unnecessary','Overdesigned'];
+var selectedReactions = [];
+function renderReactionGrid(){
+  var grid = document.getElementById('reactionGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  reactionWords.forEach(function(w){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'reaction' + (negWords.indexOf(w) > -1 ? ' neg' : '');
+    btn.textContent = w;
+    btn.addEventListener('click', function(){
+      btn.classList.toggle('on');
+      if(btn.classList.contains('on')) selectedReactions.push(w);
+      else selectedReactions = selectedReactions.filter(function(x){ return x !== w; });
+    });
+    grid.appendChild(btn);
+  });
+}
+function addInterview(){
+  var interviewer = document.getElementById('iv-interviewer').value.trim();
+  var subject = document.getElementById('iv-subject').value.trim();
+  var notes = document.getElementById('iv-notes').value.trim();
+  var wouldUse = document.getElementById('iv-wouldUse').value.trim();
+  if(!interviewer || !subject){ alert('Please add your name and who you interviewed.'); return; }
+  state.interviews.push({interviewer:interviewer, subject:subject, reactions:selectedReactions.slice(), notes:notes, wouldUse:wouldUse, time:new Date().toLocaleTimeString()});
+  save('pingInterview');
+  renderInterviewLog();
+  document.getElementById('iv-subject').value = '';
+  document.getElementById('iv-notes').value = '';
+  document.getElementById('iv-wouldUse').value = '';
+  selectedReactions = [];
+  document.querySelectorAll('.reaction.on').forEach(function(b){ b.classList.remove('on'); });
+}
+function renderInterviewLog(){
+  var ul = document.getElementById('iv-log');
+  if(!ul) return;
+  ul.innerHTML = '';
+  state.interviews.forEach(function(e, idx){
+    var li = document.createElement('li'); li.style.display = 'block';
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'del'; del.textContent = '✕';
+    del.setAttribute('aria-label','Delete interview');
+    del.addEventListener('click', function(){
+      state.interviews.splice(idx,1); save('pingInterview'); renderInterviewLog();
+    });
+    var b = document.createElement('b'); b.textContent = e.interviewer;
+    var line1 = document.createTextNode(' interviewed ');
+    var i = document.createElement('i'); i.textContent = e.subject;
+    var br1 = document.createElement('br');
+    var reactionsLine = document.createTextNode('Reactions: ' + (e.reactions.join(', ') || '—'));
+    var br2 = document.createElement('br');
+    li.appendChild(del); li.appendChild(b); li.appendChild(line1); li.appendChild(i);
+    li.appendChild(br1); li.appendChild(reactionsLine); li.appendChild(br2);
+    if(e.notes){ li.appendChild(document.createTextNode('"' + e.notes + '"')); li.appendChild(document.createElement('br')); }
+    if(e.wouldUse){ li.appendChild(document.createTextNode('Would use: ' + e.wouldUse)); }
+    ul.appendChild(li);
+  });
+}
+
+/* ===== DEBRIEF STICKIES ===== */
+function addSticky(){
+  var textEl = document.getElementById('stickyText');
+  var colorEl = document.getElementById('stickyColor');
+  var text = textEl.value.trim();
+  var color = colorEl.value;
+  if(!text) return;
+  state.stickies.push({text:text, color:color, col:'Unsorted', r:(Math.random()*4-2).toFixed(1)});
+  save(); textEl.value = ''; renderStickies();
+}
+function renderStickies(){
+  document.querySelectorAll('.board-col').forEach(function(colEl){ colEl.querySelector('.col-notes').innerHTML = ''; });
+  state.stickies.forEach(function(s, idx){
+    var target = document.querySelector('.board-col[data-col="' + s.col + '"] .col-notes') ||
+                 document.querySelector('.board-col[data-col="Unsorted"] .col-notes');
+    var div = document.createElement('div'); div.className = 'sticky ' + s.color;
+    div.style.setProperty('--r', s.r + 'deg');
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'del'; del.textContent = '✕';
+    del.setAttribute('aria-label','Delete note');
+    del.addEventListener('click', function(){ state.stickies.splice(idx,1); save(); renderStickies(); });
+    var textNode = document.createTextNode(s.text);
+    var select = document.createElement('select');
+    ['Unsorted','Desirability Signals','Feedback Themes','Iteration Ideas'].forEach(function(optVal){
+      var opt = document.createElement('option'); opt.value = optVal; opt.textContent = optVal;
+      if(s.col === optVal) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', function(){ state.stickies[idx].col = select.value; save(); renderStickies(); });
+    div.appendChild(del); div.appendChild(textNode); div.appendChild(select);
+    target.appendChild(div);
+  });
+}
+
+/* ===== PDF REPORT ===== */
+function generateReport(){
+  var btn = document.getElementById('btnGenerateReport');
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    alert('The PDF engine did not load (this page needs an internet connection the first time, to load the PDF library). Please check your connection and try again.');
+    return;
+  }
+  if(btn){ btn.disabled = true; btn.textContent = 'Building PDF...'; }
+
+  try{
+    var jsPDFCtor = window.jspdf.jsPDF;
+    var doc = new jsPDFCtor({unit:'pt', format:'letter'});
+    var pageWidth = doc.internal.pageSize.getWidth();
+    var pageHeight = doc.internal.pageSize.getHeight();
+    var margin = 48, maxWidth = pageWidth - margin*2, lineHeight = 14, y = margin;
+
+    function checkPageBreak(neededHeight){ if(y + neededHeight > pageHeight - margin){ doc.addPage(); y = margin; } }
+    function addTitle(text){ checkPageBreak(28); doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(31,51,42); doc.text(text, margin, y); y += 22; }
+    function addMeta(text){ checkPageBreak(14); doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(90,90,90); doc.text(text, margin, y); y += 14; }
+    function addSectionHeading(text){
+      y += 8; checkPageBreak(24);
+      doc.setFont('helvetica','bold'); doc.setFontSize(13.5); doc.setTextColor(181,69,27);
+      doc.text(text, margin, y); y += 6;
+      doc.setDrawColor(181,69,27); doc.setLineWidth(1); doc.line(margin, y, pageWidth - margin, y); y += 14;
+      doc.setTextColor(30,30,30);
+    }
+    function addSubheading(text){
+      checkPageBreak(16); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(47,74,60);
+      doc.text(text, margin, y); y += 14; doc.setTextColor(30,30,30);
+    }
+    function addParagraph(text, opts){
+      opts = opts || {};
+      doc.setFont('helvetica', opts.bold ? 'bold' : (opts.italic ? 'italic' : 'normal'));
+      doc.setFontSize(opts.size || 10.5);
+      var indent = opts.indent || 0;
+      var lines = doc.splitTextToSize(text && text.length ? text : '—', maxWidth - indent);
+      lines.forEach(function(line){ checkPageBreak(lineHeight); doc.text(line, margin + indent, y); y += lineHeight; });
+      doc.setFont('helvetica','normal');
+    }
+    function addImageBlock(dataUrl){
+      var w = 170, h = 120;
+      checkPageBreak(h + 12);
+      try{ doc.addImage(dataUrl, 'JPEG', margin + 12, y, w, h); }
+      catch(e){
+        doc.setFont('helvetica','italic'); doc.setFontSize(9.5); doc.setTextColor(150,60,20);
+        doc.text('(photo could not be embedded)', margin + 12, y + 12); doc.setTextColor(30,30,30);
+      }
+      y += h + 12;
+    }
+
+    var team = state.team || 'Unnamed Team';
+
+    addTitle('Field Lab: Venture Expedition — Mission Report');
+    addMeta('Team: ' + team);
+    addMeta('Generated: ' + new Date().toLocaleString());
+    y += 6;
+
+    addSectionHeading('Venture Idea');
+    addSubheading('Name'); addParagraph(state.idea.name);
+    addSubheading('One-liner'); addParagraph(state.idea.oneLiner);
+    addSubheading('Problem / who it is for'); addParagraph(state.idea.problem);
+    addSubheading('Desirability hook'); addParagraph(state.idea.desire);
+
+    addSectionHeading('Business Model Canvas');
+    var bmcLabels = {partners:'Key Partners',activities:'Key Activities',resources:'Key Resources',value:'Value Proposition',relationships:'Customer Relationships',channels:'Channels',segments:'Customer Segments',cost:'Cost Structure',revenue:'Revenue Streams'};
+    Object.keys(bmcLabels).forEach(function(k){ addSubheading(bmcLabels[k]); addParagraph(state.bmc[k]); });
+
+    addSectionHeading('Field Artifact Log (with photos)');
+    Object.keys(huntMeta).forEach(function(key){
+      addSubheading(huntMeta[key]);
+      if(state.hunts[key].length === 0){ addParagraph('(no entries)', {italic:true}); }
+      state.hunts[key].forEach(function(e){
+        addParagraph(e.name + '  @  ' + (e.loc || '—'), {bold:true});
+        addParagraph(e.exp);
+        if(e.photo){ addImageBlock(e.photo); }
+        y += 4;
+      });
+    });
+
+    addSectionHeading('Interview Log');
+    if(state.interviews.length === 0){ addParagraph('(no entries)', {italic:true}); }
+    state.interviews.forEach(function(e){
+      addParagraph('Interviewer: ' + e.interviewer + '   |   Subject: ' + e.subject, {bold:true});
+      addParagraph('Reactions: ' + (e.reactions.join(', ') || '—'));
+      if(e.notes) addParagraph('Quote/notes: "' + e.notes + '"');
+      if(e.wouldUse) addParagraph('Would they use it?: ' + e.wouldUse);
+      y += 6;
+    });
+
+    addSectionHeading('Affinity Diagram Synthesis');
+    ['Desirability Signals','Feedback Themes','Iteration Ideas','Unsorted'].forEach(function(col){
+      addSubheading(col);
+      var items = state.stickies.filter(function(s){ return s.col === col; });
+      if(items.length === 0){ addParagraph('(none)', {italic:true}); }
+      items.forEach(function(s){ addParagraph('• ' + s.text); });
+    });
+
+    addSectionHeading('Mini Alpha Test Report');
+    addSubheading('Key Findings'); addParagraph(state.reportExtra.keyFindings);
+    addSubheading('Decisions'); addParagraph(state.reportExtra.decisions);
+    addSubheading('Roadmap Changes'); addParagraph(state.reportExtra.roadmapChanges);
+
+    var filename = (team.replace(/\s+/g,'_') || 'Team') + '_MissionReport.pdf';
+
+    if(isIOSDevice()){
+      var blob = doc.output('blob');
+      var blobUrl = URL.createObjectURL(blob);
+      var opened = window.open(blobUrl, '_blank');
+      if(!opened){ window.location.href = blobUrl; }
+      setTimeout(function(){ try{ URL.revokeObjectURL(blobUrl); }catch(e){} }, 60000);
+    } else {
+      doc.save(filename);
+    }
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = '⬇ Download Mission Report (PDF)'; }
+  }
+}
+
+/* ===== BIND EVENTS ===== */
+function bindEvents(){
+  document.getElementById('btnStart').addEventListener('click', startTimer);
+  document.getElementById('btnPause').addEventListener('click', pauseTimer);
+  document.getElementById('btnReset').addEventListener('click', resetTimer);
+
+  document.querySelectorAll('.stop').forEach(function(el){
+    el.addEventListener('click', function(){ goTo(el.getAttribute('data-stage'), false); });
+  });
+
+  document.getElementById('teamName').addEventListener('input', function(e){ state.team = e.target.value; save(); });
+
+  document.getElementById('btnLabContinue').addEventListener('click', function(){ goTo('pitch', true); });
+  document.getElementById('btnPitchContinue').addEventListener('click', function(){ goTo('canvas', true); });
+  document.getElementById('btnCanvasContinue').addEventListener('click', function(){ goTo('field', true); });
+  document.getElementById('btnFieldContinue').addEventListener('click', function(){ goTo('interview', true); });
+  document.getElementById('btnInterviewContinue').addEventListener('click', function(){ goTo('debrief', true); });
+
+  document.querySelectorAll('.chip').forEach(function(chip){
+    chip.addEventListener('click', function(){ fillIdea(chip.getAttribute('data-name'), chip.getAttribute('data-problem')); });
+  });
+  ['ventureName','ventureOneLiner','ventureProblem','ventureDesire'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', syncPitch);
+  });
+
+  document.querySelectorAll('[data-bmc]').forEach(function(ta){
+    ta.addEventListener('input', function(){ state.bmc[ta.getAttribute('data-bmc')] = ta.value; save('pingCanvas'); });
+  });
+
+  Object.keys(huntMeta).forEach(function(key){
+    var cameraInput = document.getElementById(key+'-file-camera');
+    var galleryInput = document.getElementById(key+'-file-gallery');
+    if(cameraInput) cameraInput.addEventListener('change', function(){ handlePhotoSelect(key, this); });
+    if(galleryInput) galleryInput.addEventListener('change', function(){ handlePhotoSelect(key, this); });
+  });
+  document.querySelectorAll('.add-hunt-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ addHunt(btn.getAttribute('data-hunt-key')); });
+  });
+
+  document.getElementById('btnAddInterview').addEventListener('click', addInterview);
+  document.getElementById('btnAddSticky').addEventListener('click', addSticky);
+  document.getElementById('btnGenerateReport').addEventListener('click', generateReport);
+
+  ['keyFindings','decisions','roadmapChanges'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(e){
+      state.reportExtra[id] = e.target.value; save();
+    });
+  });
+}
+
+/* ===== INIT ===== */
+function init(){
+  load();
+  document.getElementById('teamName').value = state.team || '';
+  document.getElementById('ventureName').value = state.idea.name || '';
+  document.getElementById('ventureOneLiner').value = state.idea.oneLiner || '';
+  document.getElementById('ventureProblem').value = state.idea.problem || '';
+  document.getElementById('ventureDesire').value = state.idea.desire || '';
+  document.querySelectorAll('[data-bmc]').forEach(function(ta){ ta.value = state.bmc[ta.getAttribute('data-bmc')] || ''; });
+  document.getElementById('keyFindings').value = state.reportExtra.keyFindings || '';
+  document.getElementById('decisions').value = state.reportExtra.decisions || '';
+  document.getElementById('roadmapChanges').value = state.reportExtra.roadmapChanges || '';
+
+  renderLabCards();
+  renderReactionGrid();
+  Object.keys(huntMeta).forEach(renderHuntLog);
+  renderInterviewLog();
+  renderStickies();
+
+  document.querySelectorAll('.stop').forEach(function(el){
+    el.classList.toggle('done', !!state.completed[el.getAttribute('data-stage')]);
+  });
+
+  if(isIOSDevice()){
+    var note = document.getElementById('iosPermanentNote');
+    if(note) note.classList.add('show');
+  }
+
+  bindEvents();
+  renderTimer();
+}
+
+if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', init); }
+else{ init(); }
+
+})();
+</script>
+</body>
+</html>
